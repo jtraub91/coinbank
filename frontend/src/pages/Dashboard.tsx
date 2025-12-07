@@ -136,7 +136,7 @@ function Dashboard() {
           <Link
             to="/"
             onClick={() => sessionStorage.removeItem('userData')}
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-black transition-colors"
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             Logout
@@ -144,13 +144,13 @@ function Dashboard() {
         </div>
 
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-black">
+          <h1 className="text-3xl font-bold text-black dark:text-dark-text">
             Welcome, {userData.username}!
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Your account balance is
           </p>
-          <p className="text-4xl font-bold text-black" title={userData.balance.toLocaleString() + " " + userData.coin_name + "s"}>
+          <p className="text-4xl font-bold text-black dark:text-dark-text" title={userData.balance.toLocaleString() + " " + userData.coin_name + "s"}>
             <span>{userData.balance.toLocaleString()}</span>
             <span className="select-none">{userData.coin_symbol}</span>
           </p>
@@ -162,8 +162,8 @@ function Dashboard() {
             disabled={!hasBalance}
             className={`flex items-center justify-center gap-3 w-full px-6 py-3 font-medium transition-colors ${
               hasBalance
-                ? 'bg-black hover:bg-gray-800 text-white'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                ? 'bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black'
+                : 'bg-gray-200 dark:bg-gray-800 text-gray-400 cursor-not-allowed'
             }`}
             title={!hasBalance ? 'Deposit funds to enable sending' : undefined}
           >
@@ -172,7 +172,7 @@ function Dashboard() {
           </button>
           <button
             onClick={() => setDepositModalOpen(true)}
-            className="flex items-center justify-center gap-3 w-full px-6 py-3 bg-white hover:bg-gray-100 text-black border-black font-medium border border-black b-2 transition-colors"
+            className="flex items-center justify-center gap-3 w-full px-6 py-3 bg-white hover:bg-gray-100 dark:bg-dark-bg dark:hover:bg-dark-surface text-black dark:text-dark-text border-black dark:border-dark-border font-medium border transition-colors"
           >
             <Upload className="h-5 w-5" />
             Deposit
@@ -182,8 +182,8 @@ function Dashboard() {
             disabled={!hasBalance}
             className={`flex items-center justify-center gap-3 w-full px-6 py-3 font-medium border transition-colors ${
               hasBalance
-                ? 'bg-white hover:bg-gray-100 text-black border-black'
-                : 'bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed'
+                ? 'bg-white hover:bg-gray-100 dark:bg-dark-bg dark:hover:bg-dark-surface text-black dark:text-dark-text border-black dark:border-dark-border'
+                : 'bg-gray-50 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed'
             }`}
             title={!hasBalance ? 'Deposit funds to enable withdrawals' : undefined}
           >

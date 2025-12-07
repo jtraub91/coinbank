@@ -98,24 +98,24 @@ function SendModal({ isOpen, onClose, balance, coinName, coinSymbol, bankName, o
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
       <div
         ref={modalRef}
-        className="bg-white border border-black shadow-xl w-full max-w-md overflow-hidden"
+        className="bg-white dark:bg-dark-bg border border-black dark:border-dark-border shadow-xl w-full max-w-md overflow-hidden"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-dark-border">
           <div className="flex items-center gap-2">
             {step !== 'choose' && !success && (
               <button
                 onClick={() => setStep('choose')}
-                className="p-1 hover:bg-gray-100"
+                className="p-1 hover:bg-gray-100 dark:hover:bg-dark-surface"
               >
                 <ArrowLeft className="h-4 w-4 text-gray-600" />
               </button>
             )}
-            <h2 className="text-lg font-semibold">
+            <h2 className="text-lg font-semibold dark:text-dark-text">
               {success ? 'Sent!' : step === 'choose' ? 'Send' : step === 'user' ? 'Send to User' : 'Send to Bitcoin'}
             </h2>
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100">
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-dark-surface">
             <X className="h-5 w-5 text-gray-400" />
           </button>
         </div>

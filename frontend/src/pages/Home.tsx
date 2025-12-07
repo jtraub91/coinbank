@@ -8,9 +8,9 @@ function Home() {
       <div className="max-w-md w-full space-y-8 text-center">
         <div className="space-y-4">
           <div className="flex justify-center">
-            <Bitcoin className="h-16 w-16 text-black" />
+            <Bitcoin className="h-16 w-16 text-black dark:text-dark-text" />
           </div>
-          <h1 className="text-4xl font-bold tracking-tight text-black">
+          <h1 className="text-4xl font-bold tracking-tight text-black dark:text-dark-text">
             coinbank
           </h1>
         </div>
@@ -18,14 +18,14 @@ function Home() {
         <div className="space-y-4 pt-8">
           <Link
             to="/create"
-            className="flex items-center justify-center gap-3 w-full px-6 py-3 bg-black hover:bg-gray-800 text-white font-medium transition-colors"
+            className="flex items-center justify-center gap-3 w-full px-6 py-3 bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black font-medium transition-colors"
           >
             <UserPlus className="h-5 w-5" />
             Create new account
           </Link>
           <Link
             to="/login"
-            className="flex items-center justify-center gap-3 w-full px-6 py-3 bg-white hover:bg-gray-100 text-black font-medium border border-black transition-colors"
+            className="flex items-center justify-center gap-3 w-full px-6 py-3 bg-white hover:bg-gray-100 dark:bg-dark-bg dark:hover:bg-dark-surface text-black dark:text-dark-text font-medium border border-black dark:border-dark-border transition-colors"
           >
             <LogIn className="h-5 w-5" />
             Login with existing account

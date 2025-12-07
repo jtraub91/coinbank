@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { X, Copy, Check, Loader2, Zap, AlertCircle } from 'lucide-react'
+import { X, Copy, Check, Loader2, Zap, AlertCircle, Coins } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
+import { transactionsApi } from '../api'
 
 interface DepositModalProps {
   isOpen: boolean
@@ -9,12 +10,13 @@ interface DepositModalProps {
   onDeposit: (amount: number, newBalance: number) => void
 }
 
-type DepositStep = 'amount' | 'invoice' | 'success' | 'error' | 'expired'
+type DepositMethod = 'lightning' | 'token'
+type DepositStep = 'method' | 'amount' | 'invoice' | 'token' | 'success' | 'error' | 'expired'
 
 const POLL_INTERVAL_MS = 3000 // Poll every 3 seconds
 
 function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalProps) {
-  const [step, setStep] = useState<DepositStep>('amount')
+  const [step, setStep] = useState<DepositStep>('method')
   const [amount, setAmount] = useState('')
   const [invoice, setInvoice] = useState('')
   const [quoteId, setQuoteId] = useState('')
@@ -24,6 +26,7 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
   const [newBalance, setNewBalance] = useState(0)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [tokenInput, setTokenInput] = useState('')
   const modalRef = useRef<HTMLDivElement>(null)
   const pollIntervalRef = useRef<number | null>(null)
 
@@ -31,7 +34,7 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => {
-        setStep('amount')
+        setStep('method')
         setAmount('')
         setInvoice('')
         setQuoteId('')
@@ -41,6 +44,7 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
         setCopied(false)
         setError('')
         setLoading(false)
+        setTokenInput('')
         if (pollIntervalRef.current) {
           clearInterval(pollIntervalRef.current)
           pollIntervalRef.current = null
@@ -53,7 +57,7 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        if (step === 'amount' || step === 'success' || step === 'error' || step === 'expired') {
+        if (step === 'method' || step === 'amount' || step === 'token' || step === 'success' || step === 'error' || step === 'expired') {
           onClose()
         }
       }
@@ -172,9 +176,50 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
       clearInterval(pollIntervalRef.current)
       pollIntervalRef.current = null
     }
-    setStep('amount')
+    setStep('method')
     setInvoice('')
     setQuoteId('')
+    setAmount('')
+    setTokenInput('')
+    setError('')
+  }
+
+  // Redeem cashu token
+  const redeemToken = async () => {
+    if (!tokenInput.trim()) {
+      setError('Please paste a cashu token')
+      return
+    }
+
+    setLoading(true)
+    setError('')
+
+    try {
+      const res = await transactionsApi.redeemBearer(tokenInput.trim())
+      
+      if (res.error) {
+        throw new Error(res.error)
+      }
+
+      if (res.data?.success) {
+        setReceivedAmount(res.data.amount)
+        setNewBalance(res.data.new_balance)
+        setStep('success')
+        onDeposit(res.data.amount, res.data.new_balance)
+        window.dispatchEvent(new Event('stats-refresh'))
+      } else {
+        throw new Error('Failed to redeem token')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to redeem token')
+      setStep('error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const selectMethod = (m: DepositMethod) => {
+    setStep(m === 'lightning' ? 'amount' : 'token')
   }
 
   if (!isOpen) return null
@@ -184,6 +229,9 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
       case 'success': return 'Deposit Received!'
       case 'expired': return 'Invoice Expired'
       case 'error': return 'Error'
+      case 'token': return 'Deposit Token'
+      case 'amount': return 'Deposit Lightning'
+      case 'invoice': return 'Pay Invoice'
       default: return 'Deposit'
     }
   }
@@ -192,14 +240,14 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
       <div
         ref={modalRef}
-        className="bg-white border border-black shadow-xl w-full max-w-md overflow-hidden"
+        className="bg-white dark:bg-dark-bg border border-black dark:border-dark-border shadow-xl w-full max-w-md overflow-hidden"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <h2 className="text-lg font-semibold">{getTitle()}</h2>
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-dark-border">
+          <h2 className="text-lg font-semibold dark:text-dark-text">{getTitle()}</h2>
           <button 
             onClick={onClose} 
-            className="p-1 hover:bg-gray-100"
+            className="p-1 hover:bg-gray-100 dark:hover:bg-dark-surface"
             disabled={loading}
           >
             <X className="h-5 w-5 text-gray-400" />
@@ -208,6 +256,32 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
 
         {/* Content */}
         <div className="p-4">
+          {step === 'method' && (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600 text-center mb-2">Choose deposit method</p>
+              <button
+                onClick={() => selectMethod('lightning')}
+                className="w-full flex items-center gap-3 px-4 py-4 border border-gray-300 hover:border-black hover:bg-gray-50 transition-colors"
+              >
+                <Zap className="h-6 w-6 text-yellow-500" />
+                <div className="text-left">
+                  <p className="font-medium">Lightning</p>
+                  <p className="text-xs text-gray-500">Pay a Lightning invoice</p>
+                </div>
+              </button>
+              <button
+                onClick={() => selectMethod('token')}
+                className="w-full flex items-center gap-3 px-4 py-4 border border-gray-300 hover:border-black hover:bg-gray-50 transition-colors"
+              >
+                <Coins className="h-6 w-6 text-orange-500" />
+                <div className="text-left">
+                  <p className="font-medium">Cashu Token</p>
+                  <p className="text-xs text-gray-500">Paste a cashu bearer token</p>
+                </div>
+              </button>
+            </div>
+          )}
+
           {step === 'amount' && (
             <div className="space-y-4">
               <div>
@@ -242,6 +316,54 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
                     Generate Invoice
                   </>
                 )}
+              </button>
+              <button
+                onClick={handleBack}
+                className="w-full px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Back
+              </button>
+            </div>
+          )}
+
+          {step === 'token' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Cashu Token
+                </label>
+                <textarea
+                  value={tokenInput}
+                  onChange={(e) => setTokenInput(e.target.value)}
+                  placeholder="Paste cashu token (cashuA... or cashuB...)"
+                  className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none font-mono text-xs h-24 resize-none"
+                  autoFocus
+                />
+              </div>
+
+              {error && (
+                <p className="text-red-600 text-sm">{error}</p>
+              )}
+
+              <button
+                onClick={redeemToken}
+                disabled={loading || !tokenInput.trim()}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black text-white hover:bg-gray-800 transition-colors disabled:bg-gray-400"
+              >
+                {loading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    <Coins className="h-5 w-5" />
+                    Redeem Token
+                  </>
+                )}
+              </button>
+              <button
+                onClick={handleBack}
+                className="w-full px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Back
               </button>
             </div>
           )}
@@ -338,7 +460,7 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
                 </p>
               </div>
               <button
-                onClick={() => setStep('amount')}
+                onClick={handleBack}
                 className="w-full px-4 py-2 bg-black text-white hover:bg-gray-800 transition-colors"
               >
                 Try Again
@@ -358,7 +480,7 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
                 <p className="text-gray-500 text-sm mt-2">{error}</p>
               </div>
               <button
-                onClick={() => setStep('amount')}
+                onClick={handleBack}
                 className="w-full px-4 py-2 bg-black text-white hover:bg-gray-800 transition-colors"
               >
                 Try Again

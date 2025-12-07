@@ -112,6 +112,13 @@ export interface TransactionResponse {
   new_balance?: number
 }
 
+export interface RedeemBearerResponse {
+  success: boolean
+  message?: string
+  amount: number
+  new_balance: number
+}
+
 // Transaction API
 export const transactionsApi = {
   // Send to another bank user
@@ -130,7 +137,7 @@ export const transactionsApi = {
 
   // Redeem a bearer token
   redeemBearer: (token: string) =>
-    apiRequest<TransactionResponse>('/accounts/redeem/', {
+    apiRequest<RedeemBearerResponse>('/accounts/redeem/', {
       method: 'POST',
       body: JSON.stringify({ token }),
     }),

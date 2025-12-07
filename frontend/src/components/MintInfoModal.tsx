@@ -26,9 +26,12 @@ function MintInfoModal() {
 
   // Listen for stats refresh events
   useEffect(() => {
-    const handleRefresh = () => {
+    const handleRefresh = async () => {
       if (isOpen) {
-        fetchData()
+        const statsResponse = await statsApi.get()
+        if (statsResponse.data) {
+          setStats(statsResponse.data)
+        }
       }
     }
     window.addEventListener('stats-refresh', handleRefresh)
@@ -50,18 +53,22 @@ function MintInfoModal() {
   const fetchData = async () => {
     setLoading(true)
     setError(null)
+    
     const [mintResponse, statsResponse] = await Promise.all([
       mintApi.info(),
       statsApi.get()
     ])
+    
     if (mintResponse.error) {
       setError(mintResponse.error)
     } else if (mintResponse.data) {
       setMintInfo(mintResponse.data)
     }
+    
     if (statsResponse.data) {
       setStats(statsResponse.data)
     }
+    
     setLoading(false)
   }
 
@@ -97,10 +104,10 @@ function MintInfoModal() {
     ? (stats.total_liabilities) : '0'
 
   return (
-    <div className="absolute top-4 right-4">
+    <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 text-gray-400 hover:text-black transition-colors"
+        className="p-2 text-gray-400 hover:text-black dark:hover:text-dark-text transition-colors"
         title="Mint Information"
         aria-label="Mint Information"
       >
@@ -110,11 +117,11 @@ function MintInfoModal() {
       {isOpen && (
         <div 
           ref={modalRef}
-          className="absolute top-10 right-0 z-50 bg-white border border-black shadow-lg w-80"
+          className="absolute top-full right-0 mt-2 z-50 bg-white dark:bg-dark-bg border border-black dark:border-dark-border shadow-lg w-80"
         >
           {loading && (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin h-6 w-6 border-b-2 border-black" />
+              <div className="animate-spin h-6 w-6 border-b-2 border-black dark:border-dark-border" />
             </div>
           )}
 
@@ -124,8 +131,8 @@ function MintInfoModal() {
             </div>
           )}
 
-          {mintInfo && stats && !loading && (
-            <div className="divide-y divide-gray-100">
+          {mintInfo && !loading && (
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
               {/* Header */}
               <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -137,7 +144,7 @@ function MintInfoModal() {
                     />
                   )}
                   <div>
-                    <p className="font-medium text-sm">{mintInfo.name || 'Mint'}</p>
+                    <p className="font-medium text-sm text-black dark:text-dark-text">{mintInfo.name || 'Mint'}</p>
                     {mintInfo.version && (
                       <p className="text-xs text-gray-400">v{mintInfo.version}</p>
                     )}
@@ -145,36 +152,24 @@ function MintInfoModal() {
                 </div>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-1 hover:bg-gray-100"
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-dark-surface"
                 >
-                  <X className="h-4 w-4 text-gray-400" />
+                  <X className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                 </button>
               </div>
 
-              {/* Stats */}
-              <div className="p-4 grid grid-cols-2 gap-3">
-                <div>
-                  <p className="text-xs text-gray-400 uppercase tracking-wide">Accounts</p>
-                  <p className="text-lg font-semibold">{stats.total_accounts.toLocaleString()}</p>
-                </div>
-                <div>
+              {/* Reserves */}
+              {stats && (
+                <div className="p-4">
                   <p className="text-xs text-gray-400 uppercase tracking-wide">Reserves</p>
-                  <p className="text-lg font-semibold">{reserves} {stats.coin_symbol}</p>
+                  <p className="text-lg font-semibold text-black dark:text-dark-text">{reserves} {stats.coin_symbol}</p>
                 </div>
-                <div>
-                  <p className="text-xs text-gray-400 uppercase tracking-wide">Assets</p>
-                  <p className="text-sm font-medium">{stats.total_assets.toLocaleString()} {stats.coin_symbol}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400 uppercase tracking-wide">Liabilities</p>
-                  <p className="text-sm font-medium">{stats.total_liabilities.toLocaleString()} {stats.coin_symbol}</p>
-                </div>
-              </div>
+              )}
 
               {/* Description */}
               {mintInfo.description && (
                 <div className="p-4">
-                  <p className="text-xs text-gray-500">{mintInfo.description}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{mintInfo.description}</p>
                 </div>
               )}
 
@@ -182,15 +177,15 @@ function MintInfoModal() {
               <div className="p-4">
                 <p className="text-xs text-gray-400 mb-1">Mint URL</p>
                 <div className="flex items-center justify-between gap-2">
-                  <code className="text-xs font-mono text-gray-600 truncate">
+                  <code className="text-xs font-mono text-gray-600 dark:text-gray-400 truncate">
                     {getMintUrl()}
                   </code>
                   <button
                     onClick={() => copyToClipboard(getMintUrl(), 'url')}
-                    className="p-1 hover:bg-gray-100 flex-shrink-0"
+                    className="p-1 hover:bg-gray-100 dark:hover:bg-dark-surface flex-shrink-0"
                   >
                     {copiedField === 'url' ? (
-                      <Check className="h-3 w-3 text-black" />
+                      <Check className="h-3 w-3 text-black dark:text-dark-text" />
                     ) : (
                       <Copy className="h-3 w-3 text-gray-400" />
                     )}
@@ -199,19 +194,19 @@ function MintInfoModal() {
               </div>
 
               {/* Wallet API URL */}
-              {stats.wallet_api_url && (
+              {stats?.wallet_api_url && (
                 <div className="p-4">
                   <p className="text-xs text-gray-400 mb-1">Wallet API</p>
                   <div className="flex items-center justify-between gap-2">
-                    <code className="text-xs font-mono text-gray-600 truncate">
+                    <code className="text-xs font-mono text-gray-600 dark:text-gray-400 truncate">
                       {stats.wallet_api_url}
                     </code>
                     <button
                       onClick={() => copyToClipboard(stats.wallet_api_url!, 'wallet_url')}
-                      className="p-1 hover:bg-gray-100 flex-shrink-0"
+                      className="p-1 hover:bg-gray-100 dark:hover:bg-dark-surface flex-shrink-0"
                     >
                       {copiedField === 'wallet_url' ? (
-                        <Check className="h-3 w-3 text-black" />
+                        <Check className="h-3 w-3 text-black dark:text-dark-text" />
                       ) : (
                         <Copy className="h-3 w-3 text-gray-400" />
                       )}
@@ -225,15 +220,15 @@ function MintInfoModal() {
                 <div className="p-4">
                   <p className="text-xs text-gray-400 mb-1">Public Key</p>
                   <div className="flex items-center justify-between gap-2">
-                    <code className="text-xs font-mono text-gray-600">
+                    <code className="text-xs font-mono text-gray-600 dark:text-gray-400">
                       {truncatePubkey(mintInfo.pubkey)}
                     </code>
                     <button
                       onClick={() => copyToClipboard(mintInfo.pubkey!, 'pubkey')}
-                      className="p-1 hover:bg-gray-100"
+                      className="p-1 hover:bg-gray-100 dark:hover:bg-dark-surface"
                     >
                       {copiedField === 'pubkey' ? (
-                        <Check className="h-3 w-3 text-black" />
+                        <Check className="h-3 w-3 text-black dark:text-dark-text" />
                       ) : (
                         <Copy className="h-3 w-3 text-gray-400" />
                       )}
@@ -254,18 +249,18 @@ function MintInfoModal() {
                             target="_blank" 
                             rel="noopener noreferrer"
                             href={c.method === 'email' ? `mailto:${c.info}` : `https://x.com/${c.info.replace('@', '')}`}
-                            className="flex-shrink-0 hover:text-black text-gray-500"
+                            className="flex-shrink-0 hover:text-black dark:hover:text-white text-gray-500"
                           >
                             {getContactIcon(c.method)}
                           </a>
-                          <span className="text-gray-600 truncate">{c.info}</span>
+                          <span className="text-gray-600 dark:text-gray-400 truncate">{c.info}</span>
                         </div>
                         <button
                           onClick={() => copyToClipboard(c.info, `contact-${i}`)}
-                          className="p-1 hover:bg-gray-100 flex-shrink-0"
+                          className="p-1 hover:bg-gray-100 dark:hover:bg-dark-surface flex-shrink-0"
                         >
                           {copiedField === `contact-${i}` ? (
-                            <Check className="h-3 w-3 text-black" />
+                            <Check className="h-3 w-3 text-black dark:text-dark-text" />
                           ) : (
                             <Copy className="h-3 w-3 text-gray-400" />
                           )}

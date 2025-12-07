@@ -50,7 +50,7 @@ function Create() {
         <div>
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-black transition-colors"
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
@@ -58,21 +58,21 @@ function Create() {
         </div>
 
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-black">Create Account</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-3xl font-bold text-black dark:text-dark-text">Create Account</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
             Set up your new coinbank account
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="p-3 bg-gray-100 border border-black">
-              <p className="text-sm text-black">{error}</p>
+            <div className="p-3 bg-gray-100 dark:bg-gray-900 border border-black dark:border-dark-border">
+              <p className="text-sm text-black dark:text-dark-text">{error}</p>
             </div>
           )}
 
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-black">
+            <label htmlFor="username" className="block text-sm font-medium text-black dark:text-dark-text">
               Username
             </label>
             <input
@@ -81,13 +81,13 @@ function Create() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="mt-1 block w-full px-4 py-3 bg-white border border-gray-300 text-black placeholder-gray-400 focus:outline-none focus:border-black"
+              className="mt-1 block w-full px-4 py-3 bg-white dark:bg-dark-bg border border-gray-300 dark:border-gray-700 text-black dark:text-dark-text placeholder-gray-400 focus:outline-none focus:border-black dark:focus:border-white"
               placeholder="Enter your username"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-black">
+            <label htmlFor="password" className="block text-sm font-medium text-black dark:text-dark-text">
               Password
             </label>
             <input
@@ -96,13 +96,13 @@ function Create() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="mt-1 block w-full px-4 py-3 bg-white border border-gray-300 text-black placeholder-gray-400 focus:outline-none focus:border-black"
+              className="mt-1 block w-full px-4 py-3 bg-white dark:bg-dark-bg border border-gray-300 dark:border-gray-700 text-black dark:text-dark-text placeholder-gray-400 focus:outline-none focus:border-black dark:focus:border-white"
               placeholder="Enter your password"
             />
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-black">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-black dark:text-dark-text">
               Confirm Password
             </label>
             <input
@@ -111,23 +111,23 @@ function Create() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="mt-1 block w-full px-4 py-3 bg-white border border-gray-300 text-black placeholder-gray-400 focus:outline-none focus:border-black"
+              className="mt-1 block w-full px-4 py-3 bg-white dark:bg-dark-bg border border-gray-300 dark:border-gray-700 text-black dark:text-dark-text placeholder-gray-400 focus:outline-none focus:border-black dark:focus:border-white"
               placeholder="Confirm your password"
             />
           </div>
 
           <button
             type="submit"
-            className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-black hover:bg-gray-800 text-white font-medium transition-colors"
+            className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black font-medium transition-colors"
           >
             <UserPlus className="h-5 w-5" />
             Create Account
           </button>
         </form>
 
-        <p className="text-center text-gray-600">
+        <p className="text-center text-gray-600 dark:text-gray-400">
           Already have an account?{' '}
-          <Link to="/login" className="text-black underline hover:no-underline">
+          <Link to="/login" className="text-black dark:text-dark-text underline hover:no-underline">
             Login
           </Link>
         </p>
