@@ -1,3 +1,10 @@
 .env
-venv
+venv/
+
+# React build output
+static/dist/
+
+# Node modules
+node_modules/
+frontend/node_modules/
 __pycache__

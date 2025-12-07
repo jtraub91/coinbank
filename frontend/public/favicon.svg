@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="2048px" height="2048px" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 2048 2048"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    .fil0 {fill:none}
+    .fil1 {fill:#212121;fill-rule:nonzero}
+   ]]>
+  </style>
+ </defs>
+ <g id="Layer_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <g id="_394185760">
+   <rect id="_394196464" class="fil0" width="2048" height="2048"/>
+   <rect id="_394189024" class="fil0" x="255.999" y="255.999" width="1536" height="1536"/>
+  </g>
+  <polygon class="fil1" points="415.999,895.999 415.999,1536 351.997,1536 351.997,895.999 "/>
+  <polygon class="fil1" points="736,895.999 736,1536 671.998,1536 671.998,895.999 "/>
+  <polygon class="fil1" points="1056,895.999 1056,1536 991.999,1536 991.999,895.999 "/>
+  <polygon class="fil1" points="1376,895.999 1376,1536 1312,1536 1312,895.999 "/>
+  <polygon class="fil1" points="1696,895.999 1696,1536 1632,1536 1632,895.999 "/>
+  <path class="fil1" d="M1045.42 232.22l765.705 574.278 0.0744095 -0.100394c14.1378,10.6028 17.0032,30.6626 6.4004,44.8004 -6.31418,8.4189 -15.9815,12.841 -25.754,12.8008l-1535.85 0c-17.6728,0 -32.0008,-14.328 -32.0008,-32.0008 0,-11.491 6.05788,-21.5646 15.1536,-27.2091l765.722 -574.291 19.1256 25.5 -19.2 -25.6004c12.4488,-9.33662 29.4898,-8.22875 40.6217,1.82244zm650.786 567.778l-672.207 -504.155 -672.207 504.155 1344.41 0z"/>
+  <path class="fil1" d="M255.999 1664c-17.6728,0 -32.0008,14.328 -32.0008,32.0008 0,17.6728 14.328,32.0008 32.0008,32.0008l1536 0c17.6728,0 32.0008,-14.328 32.0008,-32.0008 0,-17.6728 -14.328,-32.0008 -32.0008,-32.0008l-1536 0z"/>
+  <path class="fil1" d="M351.998 1568c-17.6728,0 -32.0008,14.328 -32.0008,32.0008 0,17.6728 14.328,32.0008 32.0008,32.0008l1344 0c17.6728,0 32.0008,-14.328 32.0008,-32.0008 0,-17.6728 -14.328,-32.0008 -32.0008,-32.0008l-1344 0z"/>
+ </g>
+</svg>
