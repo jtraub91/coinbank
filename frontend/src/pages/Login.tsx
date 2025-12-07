@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, LogIn } from 'lucide-react'
 import { accountsApi } from '../api'
@@ -8,6 +8,21 @@ function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const navigate = useNavigate()
+
+  // Redirect to dashboard if already logged in
+  useEffect(() => {
+    const stored = sessionStorage.getItem('userData')
+    if (stored) {
+      try {
+        const userData = JSON.parse(stored)
+        if (userData?.username) {
+          navigate('/dashboard')
+        }
+      } catch {
+        // Invalid data, ignore
+      }
+    }
+  }, [navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,6 +39,7 @@ function Login() {
       state: {
         username: res.data!.username,
         balance: res.data!.balance,
+        bank_name: res.data!.bank_name,
         coin_name: res.data!.coin_name,
         coin_symbol: res.data!.coin_symbol
       }
@@ -52,7 +68,7 @@ function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="p-3 bg-gray-100 border border-gray-300 rounded-lg">
+            <div className="p-3 bg-gray-100 border border-black">
               <p className="text-sm text-black">{error}</p>
             </div>
           )}
@@ -67,7 +83,7 @@ function Login() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="mt-1 block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+              className="mt-1 block w-full px-4 py-3 bg-white border border-gray-300 text-black placeholder-gray-400 focus:outline-none focus:border-black"
               placeholder="Enter your username"
             />
           </div>
@@ -82,14 +98,14 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="mt-1 block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+              className="mt-1 block w-full px-4 py-3 bg-white border border-gray-300 text-black placeholder-gray-400 focus:outline-none focus:border-black"
               placeholder="Enter your password"
             />
           </div>
 
           <button
             type="submit"
-            className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors"
+            className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-black hover:bg-gray-800 text-white font-medium transition-colors"
           >
             <LogIn className="h-5 w-5" />
             Login

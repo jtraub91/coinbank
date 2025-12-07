@@ -2,6 +2,13 @@ import { useState, useEffect, useRef } from 'react'
 import { Info, X, Mail, Globe, MessageCircle, Copy, Check } from 'lucide-react'
 import { mintApi, MintInfo, statsApi, Stats } from '../api'
 
+// X (Twitter) logo SVG
+const XLogo = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+)
+
 function MintInfoModal() {
   const [isOpen, setIsOpen] = useState(false)
   const [mintInfo, setMintInfo] = useState<MintInfo | null>(null)
@@ -12,9 +19,20 @@ function MintInfoModal() {
   const modalRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (isOpen && !mintInfo) {
+    if (isOpen) {
       fetchData()
     }
+  }, [isOpen])
+
+  // Listen for stats refresh events
+  useEffect(() => {
+    const handleRefresh = () => {
+      if (isOpen) {
+        fetchData()
+      }
+    }
+    window.addEventListener('stats-refresh', handleRefresh)
+    return () => window.removeEventListener('stats-refresh', handleRefresh)
   }, [isOpen])
 
   useEffect(() => {
@@ -58,11 +76,16 @@ function MintInfoModal() {
       case 'email':
         return <Mail className="h-4 w-4" />
       case 'twitter':
+        return <XLogo className="h-4 w-4" />
       case 'nostr':
         return <MessageCircle className="h-4 w-4" />
       default:
         return <Globe className="h-4 w-4" />
     }
+  }
+
+  const getMintUrl = () => {
+    return window.location.origin
   }
 
   const truncatePubkey = (pubkey: string) => {
@@ -78,6 +101,7 @@ function MintInfoModal() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="p-2 text-gray-400 hover:text-black transition-colors"
+        title="Mint Information"
         aria-label="Mint Information"
       >
         <Info className="h-5 w-5" />
@@ -86,11 +110,11 @@ function MintInfoModal() {
       {isOpen && (
         <div 
           ref={modalRef}
-          className="absolute top-10 right-0 z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-80"
+          className="absolute top-10 right-0 z-50 bg-white border border-black shadow-lg w-80"
         >
           {loading && (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-black" />
+              <div className="animate-spin h-6 w-6 border-b-2 border-black" />
             </div>
           )}
 
@@ -109,7 +133,7 @@ function MintInfoModal() {
                     <img
                       src={mintInfo.icon_url}
                       alt=""
-                      className="h-8 w-8 rounded-full"
+                      className="h-8 w-8"
                     />
                   )}
                   <div>
@@ -121,7 +145,7 @@ function MintInfoModal() {
                 </div>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-1 hover:bg-gray-100 rounded"
+                  className="p-1 hover:bg-gray-100"
                 >
                   <X className="h-4 w-4 text-gray-400" />
                 </button>
@@ -154,6 +178,48 @@ function MintInfoModal() {
                 </div>
               )}
 
+              {/* Mint URL */}
+              <div className="p-4">
+                <p className="text-xs text-gray-400 mb-1">Mint URL</p>
+                <div className="flex items-center justify-between gap-2">
+                  <code className="text-xs font-mono text-gray-600 truncate">
+                    {getMintUrl()}
+                  </code>
+                  <button
+                    onClick={() => copyToClipboard(getMintUrl(), 'url')}
+                    className="p-1 hover:bg-gray-100 flex-shrink-0"
+                  >
+                    {copiedField === 'url' ? (
+                      <Check className="h-3 w-3 text-black" />
+                    ) : (
+                      <Copy className="h-3 w-3 text-gray-400" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Wallet API URL */}
+              {stats.wallet_api_url && (
+                <div className="p-4">
+                  <p className="text-xs text-gray-400 mb-1">Wallet API</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <code className="text-xs font-mono text-gray-600 truncate">
+                      {stats.wallet_api_url}
+                    </code>
+                    <button
+                      onClick={() => copyToClipboard(stats.wallet_api_url!, 'wallet_url')}
+                      className="p-1 hover:bg-gray-100 flex-shrink-0"
+                    >
+                      {copiedField === 'wallet_url' ? (
+                        <Check className="h-3 w-3 text-black" />
+                      ) : (
+                        <Copy className="h-3 w-3 text-gray-400" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Pubkey */}
               {mintInfo.pubkey && (
                 <div className="p-4">
@@ -164,7 +230,7 @@ function MintInfoModal() {
                     </code>
                     <button
                       onClick={() => copyToClipboard(mintInfo.pubkey!, 'pubkey')}
-                      className="p-1 hover:bg-gray-100 rounded"
+                      className="p-1 hover:bg-gray-100"
                     >
                       {copiedField === 'pubkey' ? (
                         <Check className="h-3 w-3 text-black" />
@@ -180,12 +246,30 @@ function MintInfoModal() {
               {mintInfo.contact && mintInfo.contact.length > 0 && (
                 <div className="p-4">
                   <p className="text-xs text-gray-400 mb-2">Contact</p>
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     {mintInfo.contact.map((c, i) => (
-                      <div key={i} className="flex items-center gap-2 text-xs">
-                        {getContactIcon(c.method)}
-                        <span className="text-gray-400">{c.method}:</span>
-                        <span className="text-gray-600 break-all">{c.info}</span>
+                      <div key={i} className="flex items-center justify-between gap-2 text-xs">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <a 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            href={c.method === 'email' ? `mailto:${c.info}` : `https://x.com/${c.info.replace('@', '')}`}
+                            className="flex-shrink-0 hover:text-black text-gray-500"
+                          >
+                            {getContactIcon(c.method)}
+                          </a>
+                          <span className="text-gray-600 truncate">{c.info}</span>
+                        </div>
+                        <button
+                          onClick={() => copyToClipboard(c.info, `contact-${i}`)}
+                          className="p-1 hover:bg-gray-100 flex-shrink-0"
+                        >
+                          {copiedField === `contact-${i}` ? (
+                            <Check className="h-3 w-3 text-black" />
+                          ) : (
+                            <Copy className="h-3 w-3 text-gray-400" />
+                          )}
+                        </button>
                       </div>
                     ))}
                   </div>

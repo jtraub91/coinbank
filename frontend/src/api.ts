@@ -62,8 +62,10 @@ export interface Stats {
   total_accounts: number
   total_assets: number
   total_liabilities: number
+  bank_name: string
   coin_name: string
   coin_symbol: string
+  wallet_api_url?: string
 }
 
 export interface LoginResponse {
@@ -71,6 +73,7 @@ export interface LoginResponse {
   user_id: number
   username: string
   balance: number
+  bank_name: string
   coin_name: string
   coin_symbol: string
   is_staff: boolean
@@ -87,4 +90,55 @@ export const mintApi = {
 
 export const statsApi = {
   get: () => apiRequest<Stats>('/accounts/stats/'),
+}
+
+// Transaction types
+export interface SendToUserRequest {
+  recipient_username: string
+  amount: number
+}
+
+export interface WithdrawBearerResponse {
+  success: boolean
+  token: string
+  amount: number
+  new_balance: number
+}
+
+export interface TransactionResponse {
+  success: boolean
+  message?: string
+  error?: string
+  new_balance?: number
+}
+
+// Transaction API
+export const transactionsApi = {
+  // Send to another bank user
+  sendToUser: (data: SendToUserRequest) =>
+    apiRequest<TransactionResponse>('/accounts/send/user/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  // Withdraw as bearer token
+  withdrawBearer: (amount: number) =>
+    apiRequest<WithdrawBearerResponse>('/accounts/withdraw/bearer/', {
+      method: 'POST',
+      body: JSON.stringify({ amount }),
+    }),
+
+  // Redeem a bearer token
+  redeemBearer: (token: string) =>
+    apiRequest<TransactionResponse>('/accounts/redeem/', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    }),
+
+  // Simulate deposit (for demo)
+  simulateDeposit: (amount: number) =>
+    apiRequest<TransactionResponse>('/accounts/deposit/simulate/', {
+      method: 'POST',
+      body: JSON.stringify({ amount }),
+    }),
 }
