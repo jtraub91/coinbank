@@ -27,7 +27,7 @@ python3 -m venv venv
 python -m pip install -U pip setuptools poetry
 poetry install
 python manage.py migrate
-python manage.py createsuperuser  # create user with same name as DJANGO_BANK_NAME
+python manage.py createrootbankuser  # creates superuser with same name as DJANGO_BANK_NAME
 python manage.py runserver
 ```
 
