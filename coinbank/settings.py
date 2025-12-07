@@ -130,7 +130,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_ROOT="static"
+STATIC_ROOT = "static"
 STATIC_URL = "static/"
 
 # Default primary key field type
@@ -141,3 +141,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+
+DJANGO_BANK_WALLET = os.environ["DJANGO_BANK_WALLET"]
+DJANGO_BANK_WALLET_CASHU_DIR = os.environ["DJANGO_BANK_WALLET_CASHU_DIR"]
+
+DJANGO_BANK_NAME = os.environ["DJANGO_BANK_NAME"]
+DJANGO_COIN_NAME = os.environ["DJANGO_COIN_NAME"]
+DJANGO_COIN_SYMBOL = os.environ["DJANGO_COIN_SYMBOL"]

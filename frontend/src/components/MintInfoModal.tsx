@@ -117,7 +117,7 @@ function MintInfoModal() {
       {isOpen && (
         <div 
           ref={modalRef}
-          className="absolute top-full right-0 mt-2 z-50 bg-white dark:bg-dark-bg border border-black dark:border-dark-border shadow-lg w-80"
+          className="absolute top-full right-0 mt-2 z-50 bg-white dark:bg-dark-surface border border-black dark:border-dark-border shadow-lg w-80"
         >
           {loading && (
             <div className="flex items-center justify-center py-8">
@@ -162,7 +162,7 @@ function MintInfoModal() {
               {stats && (
                 <div className="p-4">
                   <p className="text-xs text-gray-400 uppercase tracking-wide">Reserves</p>
-                  <p className="text-lg font-semibold text-black dark:text-dark-text">{reserves} {stats.coin_symbol}</p>
+                  <p className="text-lg font-semibold text-black dark:text-dark-text">{reserves.toLocaleString()} {stats.coin_symbol}</p>
                 </div>
               )}
 

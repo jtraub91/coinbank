@@ -77,6 +77,7 @@ export interface LoginResponse {
   coin_name: string
   coin_symbol: string
   is_staff: boolean
+  is_superuser: boolean
 }
 
 export interface CreateResponse {
@@ -95,6 +96,11 @@ export const statsApi = {
 // Transaction types
 export interface SendToUserRequest {
   recipient_username: string
+  amount: number
+}
+
+export interface SendToLightningRequest {
+  invoice: string
   amount: number
 }
 
@@ -124,6 +130,13 @@ export const transactionsApi = {
   // Send to another bank user
   sendToUser: (data: SendToUserRequest) =>
     apiRequest<TransactionResponse>('/accounts/send/user/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  // Send to lightning invoice
+  sendToLightning: (data: SendToLightningRequest) =>
+    apiRequest<TransactionResponse>('/accounts/send/lightning/', {
       method: 'POST',
       body: JSON.stringify(data),
     }),

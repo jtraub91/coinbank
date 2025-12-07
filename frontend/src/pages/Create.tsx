@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, UserPlus } from 'lucide-react'
+import { ArrowLeft, UserPlus, Loader2 } from 'lucide-react'
 import { accountsApi } from '../api'
 
 function Create() {
@@ -8,6 +8,7 @@ function Create() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,9 +20,11 @@ function Create() {
       return
     }
 
+    setIsLoading(true)
     const createRes = await accountsApi.create(username, password)
     if (createRes.error) {
       setError(createRes.error)
+      setIsLoading(false)
       return
     }
 
@@ -29,6 +32,7 @@ function Create() {
     const loginRes = await accountsApi.login(username, password)
     if (loginRes.error) {
       // Account created but login failed
+      setIsLoading(false)
       navigate('/login')
       return
     }
@@ -81,7 +85,7 @@ function Create() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="mt-1 block w-full px-4 py-3 bg-white dark:bg-dark-bg border border-gray-300 dark:border-gray-700 text-black dark:text-dark-text placeholder-gray-400 focus:outline-none focus:border-black dark:focus:border-white"
+              className="mt-1 block w-full px-4 py-3 bg-white dark:bg-dark-surface border border-gray-300 dark:border-dark-border text-black dark:text-dark-text placeholder-gray-400 dark:placeholder-dark-muted focus:outline-none focus:border-black dark:focus:border-white"
               placeholder="Enter your username"
             />
           </div>
@@ -96,7 +100,7 @@ function Create() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="mt-1 block w-full px-4 py-3 bg-white dark:bg-dark-bg border border-gray-300 dark:border-gray-700 text-black dark:text-dark-text placeholder-gray-400 focus:outline-none focus:border-black dark:focus:border-white"
+              className="mt-1 block w-full px-4 py-3 bg-white dark:bg-dark-surface border border-gray-300 dark:border-dark-border text-black dark:text-dark-text placeholder-gray-400 dark:placeholder-dark-muted focus:outline-none focus:border-black dark:focus:border-white"
               placeholder="Enter your password"
             />
           </div>
@@ -111,17 +115,24 @@ function Create() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="mt-1 block w-full px-4 py-3 bg-white dark:bg-dark-bg border border-gray-300 dark:border-gray-700 text-black dark:text-dark-text placeholder-gray-400 focus:outline-none focus:border-black dark:focus:border-white"
+              className="mt-1 block w-full px-4 py-3 bg-white dark:bg-dark-surface border border-gray-300 dark:border-dark-border text-black dark:text-dark-text placeholder-gray-400 dark:placeholder-dark-muted focus:outline-none focus:border-black dark:focus:border-white"
               placeholder="Confirm your password"
             />
           </div>
 
           <button
             type="submit"
-            className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black font-medium transition-colors"
+            disabled={isLoading}
+            className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-black text-white dark:bg-dark-text dark:text-dark-bg font-medium transition-colors disabled:opacity-50"
           >
-            <UserPlus className="h-5 w-5" />
-            Create Account
+            {isLoading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <>
+                <UserPlus className="h-5 w-5" />
+                Create Account
+              </>
+            )}
           </button>
         </form>
 

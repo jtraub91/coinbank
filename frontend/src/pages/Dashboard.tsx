@@ -1,5 +1,5 @@
 import { useLocation, useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, Send, Download, Upload } from 'lucide-react'
+import { ArrowLeft, Send, Download, Upload, Shield } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import SendModal, { SendData } from '../components/SendModal'
 import DepositModal from '../components/DepositModal'
@@ -12,6 +12,7 @@ interface UserData {
   coin_name: string
   coin_symbol: string
   bank_name: string
+  is_superuser?: boolean
 }
 
 function Dashboard() {
@@ -39,6 +40,7 @@ function Dashboard() {
   }
   
   const [userData, setUserData] = useState<UserData | null>(getInitialUserData)
+  const [isLoading, setIsLoading] = useState(true)
   const [sendModalOpen, setSendModalOpen] = useState(false)
   const [depositModalOpen, setDepositModalOpen] = useState(false)
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false)
@@ -61,13 +63,13 @@ function Dashboard() {
         }
       } catch (error) {
         console.error('Failed to fetch user data:', error)
+      } finally {
+        setIsLoading(false)
       }
     }
     
-    // Only fetch if we have initial data (meaning we're logged in)
-    if (userData) {
-      fetchUserData()
-    }
+    // Always fetch fresh data on mount
+    fetchUserData()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Persist userData changes to sessionStorage
@@ -85,6 +87,14 @@ function Dashboard() {
 
   if (!userData) {
     return null
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse text-gray-500 dark:text-dark-muted">Loading...</div>
+      </div>
+    )
   }
 
   const hasBalance = userData.balance > 0
@@ -105,9 +115,18 @@ function Dashboard() {
       }
       return { success: true }
     }
-    // For bitcoin/lightning sends, just simulate for now
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    setUserData(prev => prev ? { ...prev, balance: prev.balance - data.amount } : null)
+    // For lightning sends - use backend (mock mode debits accounts without real payment)
+    const res = await transactionsApi.sendToLightning({
+      invoice: data.recipient,
+      amount: data.amount,
+    })
+    if (res.error) {
+      return { success: false, error: res.error }
+    }
+    if (res.data?.new_balance !== undefined) {
+      setUserData(prev => prev ? { ...prev, balance: res.data!.new_balance! } : null)
+      window.dispatchEvent(new Event('stats-refresh'))
+    }
     return { success: true }
   }
 
@@ -147,6 +166,11 @@ function Dashboard() {
           <h1 className="text-3xl font-bold text-black dark:text-dark-text">
             Welcome, {userData.username}!
           </h1>
+          {userData.is_superuser && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-100 dark:bg-dark-surface border border-gray-300 dark:border-dark-border text-xs text-gray-600 dark:text-dark-muted">
+              Root Bank Account
+            </div>
+          )}
           <p className="text-gray-600 dark:text-gray-400">
             Your account balance is
           </p>
@@ -159,33 +183,39 @@ function Dashboard() {
         <div className="space-y-4 pt-4">
           <button
             onClick={() => setSendModalOpen(true)}
-            disabled={!hasBalance}
+            disabled={!hasBalance || userData.is_superuser}
             className={`flex items-center justify-center gap-3 w-full px-6 py-3 font-medium transition-colors ${
-              hasBalance
-                ? 'bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black'
+              hasBalance && !userData.is_superuser
+                ? 'bg-black text-white dark:bg-dark-text dark:text-dark-bg'
                 : 'bg-gray-200 dark:bg-gray-800 text-gray-400 cursor-not-allowed'
             }`}
-            title={!hasBalance ? 'Deposit funds to enable sending' : undefined}
+            title={userData.is_superuser ? 'Transactions disabled for root account' : (!hasBalance ? 'Deposit funds to enable sending' : undefined)}
           >
             <Send className="h-5 w-5" />
             Send
           </button>
           <button
             onClick={() => setDepositModalOpen(true)}
-            className="flex items-center justify-center gap-3 w-full px-6 py-3 bg-white hover:bg-gray-100 dark:bg-dark-bg dark:hover:bg-dark-surface text-black dark:text-dark-text border-black dark:border-dark-border font-medium border transition-colors"
+            disabled={userData.is_superuser}
+            className={`flex items-center justify-center gap-3 w-full px-6 py-3 font-medium border transition-all duration-200 ease-out ${
+              !userData.is_superuser
+                ? 'bg-white dark:bg-dark-surface text-black dark:text-dark-text border-black dark:border-dark-border'
+                : 'bg-gray-50 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed'
+            }`}
+            title={userData.is_superuser ? 'Transactions disabled for root account' : undefined}
           >
             <Upload className="h-5 w-5" />
             Deposit
           </button>
           <button
             onClick={() => setWithdrawModalOpen(true)}
-            disabled={!hasBalance}
-            className={`flex items-center justify-center gap-3 w-full px-6 py-3 font-medium border transition-colors ${
-              hasBalance
-                ? 'bg-white hover:bg-gray-100 dark:bg-dark-bg dark:hover:bg-dark-surface text-black dark:text-dark-text border-black dark:border-dark-border'
+            disabled={!hasBalance || userData.is_superuser}
+            className={`flex items-center justify-center gap-3 w-full px-6 py-3 font-medium border transition-all duration-200 ease-out ${
+              hasBalance && !userData.is_superuser
+                ? 'bg-white dark:bg-dark-surface text-black dark:text-dark-text border-black dark:border-dark-border'
                 : 'bg-gray-50 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed'
             }`}
-            title={!hasBalance ? 'Deposit funds to enable withdrawals' : undefined}
+            title={userData.is_superuser ? 'Transactions disabled for root account' : (!hasBalance ? 'Deposit funds to enable withdrawals' : undefined)}
           >
             <Download className="h-5 w-5" />
             Withdraw

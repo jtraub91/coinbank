@@ -83,17 +83,17 @@ function WithdrawModal({ isOpen, onClose, balance, coinSymbol, onWithdraw }: Wit
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4 py-4 overflow-y-auto">
       <div
         ref={modalRef}
-        className="bg-white dark:bg-dark-bg border border-black dark:border-dark-border shadow-xl w-full max-w-md overflow-hidden"
+        className="bg-white dark:bg-dark-surface border border-black dark:border-dark-border shadow-xl w-full max-w-md my-auto"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-dark-border">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-dark-border/50">
           <h2 className="text-lg font-semibold dark:text-dark-text">
             {bearerToken ? 'Your Cash Token' : 'Withdraw'}
           </h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-dark-surface">
+          <button onClick={onClose} className="p-1 dark:hover:bg-dark">
             <X className="h-5 w-5 text-gray-400" />
           </button>
         </div>
@@ -102,32 +102,32 @@ function WithdrawModal({ isOpen, onClose, balance, coinSymbol, onWithdraw }: Wit
         <div className="p-4">
           {bearerToken ? (
             <div className="space-y-4">
-              <div className="bg-gray-50 border border-black p-4">
+              <div className="bg-gray-50 dark:bg-dark-bg border border-black dark:border-white p-4">
                 <div className="flex gap-3">
-                  <Banknote className="h-5 w-5 text-black flex-shrink-0 mt-0.5" />
+                  <Banknote className="h-5 w-5 text-black dark:text-white flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-black">
+                    <p className="text-sm font-medium text-black dark:text-dark-text">
                       Treat this like cash!
                     </p>
-                    <p className="text-xs text-gray-600 mt-1">
+                    <p className="text-xs text-gray-600 dark:text-dark-muted mt-1">
                       Anyone with this token can spend it. Keep it safe. There is no way to recover funds if lost.
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-gray-50 border border-gray-300 p-4">
+              <div className="bg-gray-50 dark:bg-dark-bg border border-gray-300 dark:border-dark-border p-4">
                 <div className="flex items-start justify-between gap-2">
-                  <code className="text-xs font-mono text-gray-600 break-all flex-1">
+                  <code className="text-xs font-mono text-gray-600 dark:text-dark-text break-all flex-1">
                     {bearerToken}
                   </code>
                   <button
                     onClick={copyToken}
-                    className="flex-shrink-0 p-2 hover:bg-gray-200 transition-colors"
+                    className="flex-shrink-0 p-2 hover:bg-gray-200 dark:hover:bg-dark-border transition-colors"
                     title="Copy token"
                   >
                     {copied ? (
-                      <Check className="h-4 w-4 text-green-600" />
+                      <Check className="h-4 w-4 text-black dark:text-dark-text" />
                     ) : (
                       <Copy className="h-4 w-4 text-gray-400" />
                     )}
@@ -136,30 +136,30 @@ function WithdrawModal({ isOpen, onClose, balance, coinSymbol, onWithdraw }: Wit
               </div>
 
               <div className="text-center">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-dark-muted">
                   Value: <span className="font-semibold">{amount} {coinSymbol}</span>
                 </p>
               </div>
 
-              <p className="text-xs text-gray-500 text-center">
+              <p className="text-xs text-gray-500 dark:text-dark-muted text-center">
                 Trade privately with others or redeem it back to your account.
               </p>
 
               <button
                 onClick={onClose}
-                className="w-full px-4 py-2 bg-black text-white hover:bg-gray-800 transition-colors"
+                className="w-full px-4 py-2 bg-black text-white dark:bg-dark-text dark:text-dark-bg transition-colors"
               >
                 Done
               </button>
             </div>
           ) : (
             <div className="space-y-4">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-dark-muted">
                 Withdraw as a bearer token you can trade or redeem later.
               </p>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-dark-text mb-1">
                   Amount ({coinSymbol})
                 </label>
                 <input
@@ -169,21 +169,21 @@ function WithdrawModal({ isOpen, onClose, balance, coinSymbol, onWithdraw }: Wit
                   placeholder="0"
                   min="0"
                   max={balance}
-                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-black"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:border-black dark:focus:border-white"
                 />
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-gray-400 dark:text-dark-muted mt-1">
                   Available: {balance.toLocaleString()} {coinSymbol}
                 </p>
               </div>
 
               {error && (
-                <p className="text-sm text-red-600">{error}</p>
+                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
               )}
 
               <button
                 onClick={handleSubmit}
                 disabled={loading || !amount}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black text-white hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black text-white dark:bg-dark-text dark:text-dark-bg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />

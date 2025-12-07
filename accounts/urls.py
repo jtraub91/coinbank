@@ -17,4 +17,5 @@ urlpatterns = [
     path("redeem/", views.redeem_bearer, name="redeem_bearer"),
     path("deposit/", views.deposit, name="deposit"),
     path("deposit/check/", views.check_deposit, name="check_deposit"),
+    path("send/lightning/", views.send_to_lightning, name="send_to_lightning"),
 ]

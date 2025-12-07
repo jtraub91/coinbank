@@ -237,17 +237,17 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4 py-4 overflow-y-auto">
       <div
         ref={modalRef}
-        className="bg-white dark:bg-dark-bg border border-black dark:border-dark-border shadow-xl w-full max-w-md overflow-hidden"
+        className="bg-white dark:bg-dark-surface border border-black dark:border-dark-border shadow-xl w-full max-w-md my-auto"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-dark-border">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-dark-border/50">
           <h2 className="text-lg font-semibold dark:text-dark-text">{getTitle()}</h2>
           <button 
             onClick={onClose} 
-            className="p-1 hover:bg-gray-100 dark:hover:bg-dark-surface"
+            className="p-1 dark:hover:bg-dark"
             disabled={loading}
           >
             <X className="h-5 w-5 text-gray-400" />
@@ -258,25 +258,25 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
         <div className="p-4">
           {step === 'method' && (
             <div className="space-y-4">
-              <p className="text-sm text-gray-600 text-center mb-2">Choose deposit method</p>
+              <p className="text-sm text-gray-600 dark:text-dark-muted text-center mb-2">Choose deposit method</p>
               <button
                 onClick={() => selectMethod('lightning')}
-                className="w-full flex items-center gap-3 px-4 py-4 border border-gray-300 hover:border-black hover:bg-gray-50 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-4 border border-gray-300 dark:border-dark-border transition-colors"
               >
-                <Zap className="h-6 w-6 text-yellow-500" />
+                <Zap className="h-6 w-6 text-gray-600 dark:text-dark-muted" />
                 <div className="text-left">
-                  <p className="font-medium">Lightning</p>
-                  <p className="text-xs text-gray-500">Pay a Lightning invoice</p>
+                  <p className="font-medium dark:text-dark-text">Lightning</p>
+                  <p className="text-xs text-gray-500 dark:text-dark-muted">Pay a Lightning invoice</p>
                 </div>
               </button>
               <button
                 onClick={() => selectMethod('token')}
-                className="w-full flex items-center gap-3 px-4 py-4 border border-gray-300 hover:border-black hover:bg-gray-50 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-4 border border-gray-300 dark:border-dark-border transition-colors"
               >
-                <Coins className="h-6 w-6 text-orange-500" />
+                <Coins className="h-6 w-6 text-gray-600 dark:text-dark-muted" />
                 <div className="text-left">
-                  <p className="font-medium">Cashu Token</p>
-                  <p className="text-xs text-gray-500">Paste a cashu bearer token</p>
+                  <p className="font-medium dark:text-dark-text">Cashu Token</p>
+                  <p className="text-xs text-gray-500 dark:text-dark-muted">Paste a cashu bearer token</p>
                 </div>
               </button>
             </div>
@@ -285,7 +285,7 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
           {step === 'amount' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-dark-text mb-1">
                   Amount ({coinSymbol})
                 </label>
                 <input
@@ -293,20 +293,20 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="Enter amount to deposit"
-                  className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text focus:border-black dark:focus:border-white focus:outline-none"
                   min="1"
                   autoFocus
                 />
               </div>
 
               {error && (
-                <p className="text-red-600 text-sm">{error}</p>
+                <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
               )}
 
               <button
                 onClick={createInvoice}
                 disabled={loading || !amount}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black text-white hover:bg-gray-800 transition-colors disabled:bg-gray-400"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black text-white dark:bg-dark-text dark:text-dark-bg transition-colors disabled:bg-gray-400 dark:disabled:bg-gray-600"
               >
                 {loading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
@@ -319,7 +319,7 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
               </button>
               <button
                 onClick={handleBack}
-                className="w-full px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-dark-border text-gray-700 dark:text-dark-text transition-colors"
               >
                 Back
               </button>
@@ -329,26 +329,26 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
           {step === 'token' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-dark-text mb-1">
                   Cashu Token
                 </label>
                 <textarea
                   value={tokenInput}
                   onChange={(e) => setTokenInput(e.target.value)}
                   placeholder="Paste cashu token (cashuA... or cashuB...)"
-                  className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none font-mono text-xs h-24 resize-none"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text focus:border-black dark:focus:border-white focus:outline-none font-mono text-xs h-24 resize-none"
                   autoFocus
                 />
               </div>
 
               {error && (
-                <p className="text-red-600 text-sm">{error}</p>
+                <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
               )}
 
               <button
                 onClick={redeemToken}
                 disabled={loading || !tokenInput.trim()}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black text-white hover:bg-gray-800 transition-colors disabled:bg-gray-400"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black text-white dark:bg-dark-text dark:text-dark-bg transition-colors disabled:bg-gray-400 dark:disabled:bg-gray-600"
               >
                 {loading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
@@ -361,7 +361,7 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
               </button>
               <button
                 onClick={handleBack}
-                className="w-full px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-dark-border text-gray-700 dark:text-dark-text transition-colors"
               >
                 Back
               </button>
@@ -377,23 +377,23 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
                 </div>
               </div>
 
-              <p className="text-center text-sm text-gray-600">
+              <p className="text-center text-sm text-gray-600 dark:text-dark-muted">
                 Pay <span className="font-bold">{receivedAmount.toLocaleString()} {coinSymbol}</span>
               </p>
 
               {/* Invoice */}
-              <div className="bg-gray-50 border border-gray-300 p-3">
+              <div className="bg-gray-50 dark:bg-dark-bg border border-gray-300 dark:border-dark-border p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <code className="text-xs font-mono text-gray-600 break-all">
+                  <code className="text-xs font-mono text-gray-600 dark:text-dark-text break-all">
                     {truncateInvoice(invoice)}
                   </code>
                   <button
                     onClick={copyToClipboard}
-                    className="flex-shrink-0 p-2 hover:bg-gray-200 transition-colors"
+                    className="flex-shrink-0 p-2 hover:bg-gray-200 dark:hover:bg-dark-border transition-colors"
                     title="Copy invoice"
                   >
                     {copied ? (
-                      <Check className="h-4 w-4 text-green-600" />
+                      <Check className="h-4 w-4 text-black dark:text-dark-text" />
                     ) : (
                       <Copy className="h-4 w-4 text-gray-400" />
                     )}
@@ -401,20 +401,20 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
                 </div>
               </div>
 
-              <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+              <div className="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-dark-muted">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Waiting for payment...
               </div>
 
               {expiresAt && (
-                <p className="text-xs text-gray-400 text-center">
+                <p className="text-xs text-gray-400 dark:text-dark-muted text-center">
                   Invoice expires at {expiresAt.toLocaleTimeString()}
                 </p>
               )}
 
               <button
                 onClick={handleBack}
-                className="w-full px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-dark-border text-gray-700 dark:text-dark-text transition-colors"
               >
                 Cancel
               </button>
@@ -424,22 +424,22 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
           {step === 'success' && (
             <div className="text-center py-8 space-y-4">
               <div className="flex justify-center">
-                <div className="h-16 w-16 bg-green-100 border border-green-700 flex items-center justify-center">
-                  <Check className="h-8 w-8 text-green-700" />
+                <div className="h-16 w-16 bg-gray-100 dark:bg-dark-bg border border-black dark:border-dark-border flex items-center justify-center">
+                  <Check className="h-8 w-8 text-black dark:text-dark-text" />
                 </div>
               </div>
               <div>
                 <p className="text-lg font-medium">Payment Received</p>
-                <p className="text-3xl font-bold text-black mt-2">
+                <p className="text-3xl font-bold text-black dark:text-dark-text mt-2">
                   +{receivedAmount.toLocaleString()} {coinSymbol}
                 </p>
-                <p className="text-gray-500 text-sm mt-2">
+                <p className="text-gray-500 dark:text-dark-muted text-sm mt-2">
                   New balance: {newBalance.toLocaleString()} {coinSymbol}
                 </p>
               </div>
               <button
                 onClick={onClose}
-                className="w-full px-4 py-2 bg-black text-white hover:bg-gray-800 transition-colors"
+                className="w-full px-4 py-2 bg-black text-white dark:bg-dark-text dark:text-dark-bg transition-colors"
               >
                 Done
               </button>
@@ -449,19 +449,19 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
           {step === 'expired' && (
             <div className="text-center py-8 space-y-4">
               <div className="flex justify-center">
-                <div className="h-16 w-16 bg-gray-100 border border-black flex items-center justify-center">
-                  <AlertCircle className="h-8 w-8 text-gray-600" />
+                <div className="h-16 w-16 bg-gray-100 dark:bg-dark-bg border border-black dark:border-dark-border flex items-center justify-center">
+                  <AlertCircle className="h-8 w-8 text-gray-600 dark:text-dark-muted" />
                 </div>
               </div>
               <div>
                 <p className="text-lg font-medium">Invoice Expired</p>
-                <p className="text-gray-500 text-sm mt-2">
+                <p className="text-gray-500 dark:text-dark-muted text-sm mt-2">
                   The invoice has expired. Please try again.
                 </p>
               </div>
               <button
                 onClick={handleBack}
-                className="w-full px-4 py-2 bg-black text-white hover:bg-gray-800 transition-colors"
+                className="w-full px-4 py-2 bg-black text-white dark:bg-dark-text dark:text-dark-bg transition-colors"
               >
                 Try Again
               </button>
@@ -471,17 +471,17 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
           {step === 'error' && (
             <div className="text-center py-8 space-y-4">
               <div className="flex justify-center">
-                <div className="h-16 w-16 bg-gray-100 border border-black flex items-center justify-center">
-                  <AlertCircle className="h-8 w-8 text-red-600" />
+                <div className="h-16 w-16 bg-gray-100 dark:bg-dark-bg border border-black dark:border-dark-border flex items-center justify-center">
+                  <AlertCircle className="h-8 w-8 text-black dark:text-dark-text" />
                 </div>
               </div>
               <div>
                 <p className="text-lg font-medium">Error</p>
-                <p className="text-gray-500 text-sm mt-2">{error}</p>
+                <p className="text-gray-500 dark:text-dark-muted text-sm mt-2">{error}</p>
               </div>
               <button
                 onClick={handleBack}
-                className="w-full px-4 py-2 bg-black text-white hover:bg-gray-800 transition-colors"
+                className="w-full px-4 py-2 bg-black text-white dark:bg-dark-text dark:text-dark-bg transition-colors"
               >
                 Try Again
               </button>

@@ -36,7 +36,7 @@ function StatsFooter() {
 
   if (loading) {
     return (
-      <footer className="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-bg border-t border-black dark:border-dark-border py-2 px-4">
+      <footer className="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-surface border-t border-black dark:border-dark-border py-2 px-4">
         <div className="flex justify-center">
           <div className="animate-pulse text-sm text-gray-500">Loading stats...</div>
         </div>
@@ -49,7 +49,7 @@ function StatsFooter() {
   }
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-bg border-t border-black dark:border-dark-border py-2 px-2 sm:px-4">
+    <footer className="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-surface border-t border-black dark:border-dark-border py-2 px-2 sm:px-4">
       <div className="flex items-center justify-center gap-2 sm:gap-6 text-xs sm:text-sm">
         <div className="flex items-center gap-1">
           <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />

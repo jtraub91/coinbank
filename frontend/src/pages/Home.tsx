@@ -18,14 +18,14 @@ function Home() {
         <div className="space-y-4 pt-8">
           <Link
             to="/create"
-            className="flex items-center justify-center gap-3 w-full px-6 py-3 bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black font-medium transition-colors"
+            className="flex items-center justify-center gap-3 w-full px-6 py-3 bg-black text-white dark:bg-dark-text dark:text-dark-bg font-medium transition-colors"
           >
             <UserPlus className="h-5 w-5" />
             Create new account
           </Link>
           <Link
             to="/login"
-            className="flex items-center justify-center gap-3 w-full px-6 py-3 bg-white hover:bg-gray-100 dark:bg-dark-bg dark:hover:bg-dark-surface text-black dark:text-dark-text font-medium border border-black dark:border-dark-border transition-colors"
+            className="flex items-center justify-center gap-3 w-full px-6 py-3 bg-white dark:bg-dark-surface text-black dark:text-dark-text font-medium border border-black dark:border-dark-border transition-colors"
           >
             <LogIn className="h-5 w-5" />
             Login with existing account

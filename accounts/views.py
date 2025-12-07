@@ -5,6 +5,7 @@ from datetime import timedelta
 import requests
 from asgiref.sync import sync_to_async
 from cashu.wallet.wallet import Wallet
+from cashu.wallet.helpers import receive as cashu_receive, deserialize_token_from_string
 from django.contrib.auth import authenticate, login
 from django.db import transaction
 from django.db.models import Sum
@@ -39,7 +40,8 @@ def accounts_list(request):
 @require_http_methods(["GET"])
 def stats(request):
     """Get aggregate statistics for all accounts."""
-    total_accounts = Account.objects.count()
+    # Exclude superuser from account count
+    total_accounts = Account.objects.filter(is_superuser=False).count()
 
     # Assets are balances of owned accounts (ecash coinbank holds)
     total_assets = (
@@ -140,6 +142,7 @@ def accounts_login(request):
                     "coin_name": coin_name,
                     "coin_symbol": coin_symbol,
                     "is_staff": user.is_staff,
+                    "is_superuser": user.is_superuser,
                 }
             )
         else:
@@ -161,23 +164,26 @@ def me(request):
     user = _get_logged_in_user(request)
     if not user:
         return JsonResponse({"error": "Not authenticated"}, status=401)
-    
+
     # Refresh from database to get current balance
     user.refresh_from_db()
-    
+
     bank_name = os.environ["DJANGO_BANK_NAME"]
     coin_name = os.environ["DJANGO_COIN_NAME"]
     coin_symbol = os.environ["DJANGO_COIN_SYMBOL"]
-    
-    return JsonResponse({
-        "user_id": user.id,
-        "username": user.username,
-        "balance": user.balance,
-        "bank_name": bank_name,
-        "coin_name": coin_name,
-        "coin_symbol": coin_symbol,
-        "is_staff": user.is_staff,
-    })
+
+    return JsonResponse(
+        {
+            "user_id": user.id,
+            "username": user.username,
+            "balance": user.balance,
+            "bank_name": bank_name,
+            "coin_name": coin_name,
+            "coin_symbol": coin_symbol,
+            "is_staff": user.is_staff,
+            "is_superuser": user.is_superuser,
+        }
+    )
 
 
 @csrf_exempt
@@ -252,7 +258,7 @@ async def _load_wallet():
     )
     # Always load mint info and keysets
     await wallet.load_mint()
-    
+
     return wallet
 
 
@@ -268,19 +274,19 @@ def _get_logged_in_user_async(request):
 def _debit_user_and_bank(user_id, amount):
     """Debit user balance and bank assets atomically."""
     bank_username = os.environ["DJANGO_BANK_WALLET"]
-    
+
     with transaction.atomic():
         account = Account.objects.select_for_update().get(id=user_id)
         if account.balance < amount:
             raise ValueError("Insufficient balance")
-        
+
         try:
             bank = Account.objects.select_for_update().get(username=bank_username)
             bank.balance -= amount
             bank.save()
         except Account.DoesNotExist:
             pass  # No bank account
-        
+
         account.balance -= amount
         account.save()
         return account.balance
@@ -310,29 +316,36 @@ async def withdraw_bearer(request):
 
         # Load wallet and create token
         wallet = await _load_wallet()
-        
+
         # Load proofs from wallet database
         await wallet.load_proofs()
-        
+
         # Check wallet has enough balance
         wallet_balance = wallet.available_balance
         if wallet_balance.amount < amount:
-            return JsonResponse({"error": f"Insufficient wallet balance ({wallet_balance.amount} < {amount})"}, status=500)
-        
+            return JsonResponse(
+                {
+                    "error": f"Insufficient wallet balance ({wallet_balance.amount} < {amount})"
+                },
+                status=500,
+            )
+
         # Select proofs to send (this may do a swap with the mint if needed)
         send_proofs, fees = await wallet.select_to_send(
             wallet.proofs, amount, set_reserved=True
         )
-        
+
         if not send_proofs:
-            return JsonResponse({"error": "Could not select proofs for amount"}, status=500)
-        
+            return JsonResponse(
+                {"error": "Could not select proofs for amount"}, status=500
+            )
+
         # Serialize proofs to a token string
         token = await wallet.serialize_proofs(send_proofs)
-        
+
         if not token:
             return JsonResponse({"error": "Failed to generate token"}, status=500)
-        
+
         # Invalidate the sent proofs from the wallet
         await wallet.invalidate(send_proofs)
 
@@ -375,14 +388,18 @@ async def redeem_bearer(request):
 
         # Load wallet and receive token
         wallet = await _load_wallet()
-        
+
         try:
+            # Deserialize and receive the token using cashu helpers
+            token_obj = deserialize_token_from_string(token)
+            # Get the amount from the token proofs
+            amount = sum(p.amount for p in token_obj.proofs)
+
             # Receive the token (redeem it into wallet)
-            received_amount = await wallet.receive(token)
-            amount = received_amount if isinstance(received_amount, int) else sum(p.amount for p in received_amount)
+            await cashu_receive(wallet, token_obj)
         except Exception as e:
             return JsonResponse({"error": f"Invalid token: {str(e)}"}, status=400)
-        
+
         if not amount or amount <= 0:
             return JsonResponse({"error": "Invalid token"}, status=400)
 
@@ -420,7 +437,7 @@ def _create_payment_request(user, amount, quote_id, invoice, request_type, expir
 def _get_payment_request(quote_id):
     """Get a PaymentRequest by quote_id."""
     try:
-        return PaymentRequest.objects.select_related('account').get(quote_id=quote_id)
+        return PaymentRequest.objects.select_related("account").get(quote_id=quote_id)
     except PaymentRequest.DoesNotExist:
         return None
 
@@ -429,7 +446,7 @@ def _get_payment_request(quote_id):
 def _credit_user_and_bank(user_id, amount):
     """Credit user balance and bank assets atomically."""
     bank_username = os.environ["DJANGO_BANK_WALLET"]
-    
+
     with transaction.atomic():
         account = Account.objects.select_for_update().get(id=user_id)
         try:
@@ -438,7 +455,7 @@ def _credit_user_and_bank(user_id, amount):
             bank.save()
         except Account.DoesNotExist:
             pass  # No bank account, just credit user
-        
+
         account.balance += amount
         account.save()
         return account.balance
@@ -478,10 +495,10 @@ async def deposit(request):
         # Load wallet and create mint quote (invoice)
         wallet = await _load_wallet()
         mint_quote = await wallet.request_mint(amount)
-        
+
         # Calculate expiry time
         expires_at = timezone.now() + timedelta(seconds=INVOICE_EXPIRY_SECONDS)
-        
+
         # Store payment request in database
         payment_request = await _create_payment_request(
             user=user,
@@ -506,7 +523,9 @@ async def deposit(request):
     except ValueError:
         return JsonResponse({"error": "Invalid amount"}, status=400)
     except Exception as e:
-        return JsonResponse({"error": f"Failed to create invoice: {str(e)}"}, status=500)
+        return JsonResponse(
+            {"error": f"Failed to create invoice: {str(e)}"}, status=500
+        )
 
 
 @csrf_exempt
@@ -528,75 +547,151 @@ async def check_deposit(request):
         payment_request = await _get_payment_request(quote_id)
         if not payment_request:
             return JsonResponse({"error": "Payment request not found"}, status=404)
-        
+
         # Verify ownership
         if payment_request.account_id != user.id:
             return JsonResponse({"error": "Not authorized"}, status=403)
-        
+
         # Check if already processed
         if payment_request.status == PaymentRequest.Status.PAID:
-            return JsonResponse({
-                "success": True,
-                "paid": True,
-                "amount": payment_request.amount,
-                "message": "Already credited",
-            })
-        
+            return JsonResponse(
+                {
+                    "success": True,
+                    "paid": True,
+                    "amount": payment_request.amount,
+                    "message": "Already credited",
+                }
+            )
+
         if payment_request.status == PaymentRequest.Status.EXPIRED:
-            return JsonResponse({
-                "success": True,
-                "paid": False,
-                "expired": True,
-                "message": "Invoice expired",
-            })
-        
+            return JsonResponse(
+                {
+                    "success": True,
+                    "paid": False,
+                    "expired": True,
+                    "message": "Invoice expired",
+                }
+            )
+
         # Check if expired
         if payment_request.is_expired:
             await _mark_payment_expired(payment_request)
-            return JsonResponse({
-                "success": True,
-                "paid": False,
-                "expired": True,
-                "message": "Invoice expired",
-            })
+            return JsonResponse(
+                {
+                    "success": True,
+                    "paid": False,
+                    "expired": True,
+                    "message": "Invoice expired",
+                }
+            )
 
         # Load wallet and try to mint - this checks payment and mints in one call
         wallet = await _load_wallet()
-        
+
         try:
             # wallet.mint() will succeed if invoice is paid, raise exception if not
             proofs = await wallet.mint(payment_request.amount, quote_id=quote_id)
-            
+
             # If we get here, payment was successful - credit user and bank
             new_balance = await _credit_user_and_bank(user.id, payment_request.amount)
-            
+
             # Mark as paid
             await _mark_payment_paid(payment_request)
-            
-            return JsonResponse({
-                "success": True,
-                "paid": True,
-                "amount": payment_request.amount,
-                "new_balance": new_balance,
-            })
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "paid": True,
+                    "amount": payment_request.amount,
+                    "new_balance": new_balance,
+                }
+            )
         except Exception as e:
             # Invoice not paid yet (or other error)
             error_msg = str(e).lower()
-            if "not paid" in error_msg or "pending" in error_msg or "unpaid" in error_msg:
-                return JsonResponse({
+            if (
+                "not paid" in error_msg
+                or "pending" in error_msg
+                or "unpaid" in error_msg
+            ):
+                return JsonResponse(
+                    {
+                        "success": True,
+                        "paid": False,
+                        "expired": False,
+                    }
+                )
+            # Some other error
+            return JsonResponse(
+                {
                     "success": True,
                     "paid": False,
                     "expired": False,
-                })
-            # Some other error
-            return JsonResponse({
-                "success": True,
-                "paid": False,
-                "expired": False,
-                "debug": str(e),
-            })
+                    "debug": str(e),
+                }
+            )
 
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
     except Exception as e:
         return JsonResponse({"error": f"Check failed: {str(e)}"}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+async def send_to_lightning(request):
+    """Send to a lightning invoice. Mock version that just debits accounts for demo."""
+    user = await _get_logged_in_user_async(request)
+    if not user:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+
+    try:
+        data = json.loads(request.body)
+        invoice = data.get("invoice")
+        amount = data.get("amount")
+
+        if not invoice:
+            return JsonResponse({"error": "invoice is required"}, status=400)
+
+        if amount is None:
+            return JsonResponse({"error": "amount is required"}, status=400)
+
+        amount = int(amount)
+        if amount <= 0:
+            return JsonResponse({"error": "Amount must be positive"}, status=400)
+
+        if amount > user.balance:
+            return JsonResponse({"error": "Insufficient balance"}, status=400)
+
+        # Mock: Just debit user and bank without actually paying the invoice
+        # TODO: Uncomment below to use real Lightning payment via mint:
+        # wallet = await _load_wallet()
+        # await wallet.load_proofs()
+        # wallet_balance = wallet.available_balance
+        # if wallet_balance < amount:
+        #     return JsonResponse({"error": f"Insufficient bank reserves"}, status=500)
+        # melt_quote = await wallet.melt_quote(invoice)
+        # total_amount = melt_quote.amount + melt_quote.fee_reserve
+        # send_proofs, fees = await wallet.select_to_send(wallet.proofs, total_amount, set_reserved=True)
+        # melt_response = await wallet.melt(send_proofs, invoice, melt_quote.fee_reserve, melt_quote.quote)
+
+        # Debit user and bank
+        try:
+            new_balance = await _debit_user_and_bank(user.id, amount)
+        except ValueError as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": f"Sent {amount} sats via Lightning (mock)",
+                "amount": amount,
+                "new_balance": new_balance,
+            }
+        )
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    except ValueError:
+        return JsonResponse({"error": "Invalid amount"}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": f"Send failed: {str(e)}"}, status=500)

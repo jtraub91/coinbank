@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, LogIn } from 'lucide-react'
+import { ArrowLeft, LogIn, Loader2 } from 'lucide-react'
 import { accountsApi } from '../api'
 
 function Login() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
 
   // Redirect to dashboard if already logged in
@@ -27,10 +28,12 @@ function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setIsLoading(true)
 
     const res = await accountsApi.login(username, password)
     if (res.error) {
       setError(res.error)
+      setIsLoading(false)
       return
     }
 
@@ -83,7 +86,7 @@ function Login() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="mt-1 block w-full px-4 py-3 bg-white dark:bg-dark-bg border border-gray-300 dark:border-gray-700 text-black dark:text-dark-text placeholder-gray-400 focus:outline-none focus:border-black dark:focus:border-white"
+              className="mt-1 block w-full px-4 py-3 bg-white dark:bg-dark-surface border border-gray-300 dark:border-dark-border text-black dark:text-dark-text placeholder-gray-400 dark:placeholder-dark-muted focus:outline-none focus:border-black dark:focus:border-white"
               placeholder="Enter your username"
             />
           </div>
@@ -98,17 +101,24 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="mt-1 block w-full px-4 py-3 bg-white dark:bg-dark-bg border border-gray-300 dark:border-gray-700 text-black dark:text-dark-text placeholder-gray-400 focus:outline-none focus:border-black dark:focus:border-white"
+              className="mt-1 block w-full px-4 py-3 bg-white dark:bg-dark-surface border border-gray-300 dark:border-dark-border text-black dark:text-dark-text placeholder-gray-400 dark:placeholder-dark-muted focus:outline-none focus:border-black dark:focus:border-white"
               placeholder="Enter your password"
             />
           </div>
 
           <button
             type="submit"
-            className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black font-medium transition-colors"
+            disabled={isLoading}
+            className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-black text-white dark:bg-dark-text dark:text-dark-bg font-medium transition-colors disabled:opacity-50"
           >
-            <LogIn className="h-5 w-5" />
-            Login
+            {isLoading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <>
+                <LogIn className="h-5 w-5" />
+                Login
+              </>
+            )}
           </button>
         </form>
 
