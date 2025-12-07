@@ -5,11 +5,12 @@ interface WithdrawModalProps {
   isOpen: boolean
   onClose: () => void
   balance: number
+  coinName: string
   coinSymbol: string
   onWithdraw: (amount: number) => Promise<{ success: boolean; token?: string; error?: string }>
 }
 
-function WithdrawModal({ isOpen, onClose, balance, coinSymbol, onWithdraw }: WithdrawModalProps) {
+function WithdrawModal({ isOpen, onClose, balance, coinName, coinSymbol, onWithdraw }: WithdrawModalProps) {
   const [amount, setAmount] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -83,7 +84,7 @@ function WithdrawModal({ isOpen, onClose, balance, coinSymbol, onWithdraw }: Wit
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4 py-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 px-4 py-4 overflow-y-auto">
       <div
         ref={modalRef}
         className="bg-white dark:bg-dark-surface border border-black dark:border-dark-border shadow-xl w-full max-w-md my-auto"
@@ -160,17 +161,22 @@ function WithdrawModal({ isOpen, onClose, balance, coinSymbol, onWithdraw }: Wit
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-dark-text mb-1">
-                  Amount ({coinSymbol})
+                  Amount
                 </label>
-                <input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0"
-                  min="0"
-                  max={balance}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:border-black dark:focus:border-white"
-                />
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="0"
+                    min="0"
+                    max={balance}
+                    className="w-full px-3 py-2 pr-16 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:border-black dark:focus:border-white"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-dark-muted pointer-events-none">
+                    {coinName}s
+                  </span>
+                </div>
                 <p className="text-xs text-gray-400 dark:text-dark-muted mt-1">
                   Available: {balance.toLocaleString()} {coinSymbol}
                 </p>
@@ -190,7 +196,7 @@ function WithdrawModal({ isOpen, onClose, balance, coinSymbol, onWithdraw }: Wit
                 ) : (
                   <>
                     <Banknote className="h-5 w-5" />
-                    Get Cash Token
+                    Get Cashu Token
                   </>
                 )}
               </button>

@@ -44,8 +44,9 @@ function App() {
     <div className="relative min-h-screen bg-white dark:bg-dark-bg transition-colors duration-200">
       {/* Top left - Bitcoin conversion */}
       {stats && (
-        <div className="absolute top-4 left-4 flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
-          <span>100,000,000 {stats.coin_symbol}</span>
+        <div title={"100,000,000 " + stats.coin_name + "s" + " = 1 Bitcoin"}
+          className="absolute select-none cursor-pointer top-4 left-4 flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
+          <span>100,000,000<span className="ml-1 select-none">{stats.coin_symbol}</span></span>
           <span>=</span>
           <span>1</span>
           <Bitcoin className="h-3.5 w-3.5" />

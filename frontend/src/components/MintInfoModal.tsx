@@ -91,10 +91,6 @@ function MintInfoModal() {
     }
   }
 
-  const getMintUrl = () => {
-    return window.location.origin
-  }
-
   const truncatePubkey = (pubkey: string) => {
     if (pubkey.length <= 16) return pubkey
     return `${pubkey.slice(0, 8)}...${pubkey.slice(-8)}`
@@ -162,7 +158,7 @@ function MintInfoModal() {
               {stats && (
                 <div className="p-4">
                   <p className="text-xs text-gray-400 uppercase tracking-wide">Reserves</p>
-                  <p className="text-lg font-semibold text-black dark:text-dark-text">{reserves.toLocaleString()} {stats.coin_symbol}</p>
+                  <p className="text-lg font-semibold text-black dark:text-dark-text">{reserves.toLocaleString()} <span className="text-xs text-gray-400 select-none">{stats.coin_symbol}</span></p>
                 </div>
               )}
 
@@ -178,10 +174,10 @@ function MintInfoModal() {
                 <p className="text-xs text-gray-400 mb-1">Mint URL</p>
                 <div className="flex items-center justify-between gap-2">
                   <code className="text-xs font-mono text-gray-600 dark:text-gray-400 truncate">
-                    {getMintUrl()}
+                    {mintInfo.urls?.[0]}
                   </code>
                   <button
-                    onClick={() => copyToClipboard(getMintUrl(), 'url')}
+                    onClick={() => copyToClipboard(mintInfo.urls?.[0] || '', 'url')}
                     className="p-1 hover:bg-gray-100 dark:hover:bg-dark-surface flex-shrink-0"
                   >
                     {copiedField === 'url' ? (

@@ -91,8 +91,13 @@ function SendModal({ isOpen, onClose, balance, coinName, coinSymbol, bankName, o
 
   if (!isOpen) return null
 
+  const truncateLightningInvoice = (pubkey: string) => {
+    if (pubkey.length <= 32) return pubkey
+    return `${pubkey.slice(0, 16)}...${pubkey.slice(-16)}`
+  }
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4 py-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 px-4 py-4 overflow-y-auto">
       <div
         ref={modalRef}
         className="bg-white dark:bg-dark-surface border border-black dark:border-dark-border shadow-xl w-full max-w-md my-auto"
@@ -109,7 +114,7 @@ function SendModal({ isOpen, onClose, balance, coinName, coinSymbol, bankName, o
               </button>
             )}
             <h2 className="text-lg font-semibold dark:text-dark-text">
-              {success ? 'Sent!' : step === 'choose' ? 'Send' : step === 'user' ? 'Send to User' : 'Send to Lightning'}
+              {success ? 'Sent!' : step === 'choose' ? 'Send' : step === 'user' ? 'Send to User' : 'Send via Lightning'}
             </h2>
           </div>
           <button onClick={onClose} className="p-1 dark:hover:bg-dark">
@@ -127,9 +132,17 @@ function SendModal({ isOpen, onClose, balance, coinName, coinSymbol, bankName, o
                 </div>
               </div>
               <div>
-                <p className="text-lg font-medium">Payment Sent</p>
+                <p className="text-lg font-medium">{step === "user" ? "Payment Transferred" : "Payment Sent"}</p>
                 <p className="text-gray-500 dark:text-dark-muted text-sm mt-1">
-                  {amount} {coinSymbol} sent to {recipient}
+                  
+                  {step === "user" ?  <span className="mx-1">transferred to {recipient}</span> :
+                    <div>
+                      <span>{amount}<span className="text-xs select-none">{coinSymbol}</span></span>
+                      <span className="mx-1">sent to</span> 
+                      <div>{truncateLightningInvoice(recipient)}</div>
+                      <div>via lightning invoice</div>
+                    </div>
+                  }
                 </p>
               </div>
               <button
@@ -164,7 +177,7 @@ function SendModal({ isOpen, onClose, balance, coinName, coinSymbol, bankName, o
                   <Zap className="h-5 w-5 text-gray-600 dark:text-dark-muted" />
                 </div>
                 <div>
-                  <p className="font-medium dark:text-dark-text">Send to Lightning</p>
+                  <p className="font-medium dark:text-dark-text">Send via Lightning</p>
                   <p className="text-sm text-gray-500 dark:text-dark-muted">Send to a Lightning invoice or address</p>
                 </div>
               </button>
@@ -185,17 +198,22 @@ function SendModal({ isOpen, onClose, balance, coinName, coinSymbol, bankName, o
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-dark-text mb-1">
-                  Amount ({coinSymbol})
+                  Amount
                 </label>
-                <input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0"
-                  min="0"
-                  max={balance}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:border-black dark:focus:border-white"
-                />
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="0"
+                    min="0"
+                    max={balance}
+                    className="w-full px-3 py-2 pr-16 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:border-black dark:focus:border-white"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-dark-muted pointer-events-none">
+                    {coinName}s
+                  </span>
+                </div>
                 <p className="text-xs text-gray-400 dark:text-dark-muted mt-1">
                   Available: {balance.toLocaleString()} {coinSymbol}
                 </p>
@@ -234,17 +252,22 @@ function SendModal({ isOpen, onClose, balance, coinName, coinSymbol, bankName, o
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-dark-text mb-1">
-                  Amount ({coinSymbol})
+                  Amount
                 </label>
-                <input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0"
-                  min="0"
-                  max={balance}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:border-black dark:focus:border-white"
-                />
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="0"
+                    min="0"
+                    max={balance}
+                    className="w-full px-3 py-2 pr-16 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:border-black dark:focus:border-white"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-dark-muted pointer-events-none">
+                    {coinName}s
+                  </span>
+                </div>
                 <p className="text-xs text-gray-400 dark:text-dark-muted mt-1">
                   Available: {balance.toLocaleString()} {coinSymbol}
                 </p>

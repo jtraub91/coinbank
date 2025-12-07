@@ -236,6 +236,7 @@ function Dashboard() {
       <DepositModal
         isOpen={depositModalOpen}
         onClose={() => setDepositModalOpen(false)}
+        coinName={userData.coin_name}
         coinSymbol={userData.coin_symbol}
         onDeposit={handleDeposit}
       />
@@ -243,6 +244,7 @@ function Dashboard() {
         isOpen={withdrawModalOpen}
         onClose={() => setWithdrawModalOpen(false)}
         balance={userData.balance}
+        coinName={userData.coin_name}
         coinSymbol={userData.coin_symbol}
         onWithdraw={handleWithdraw}
       />

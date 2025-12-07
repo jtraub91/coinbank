@@ -37,6 +37,7 @@ export interface MintInfo {
   description?: string
   description_long?: string
   contact?: Array<{ method: string; info: string }>
+  urls?: Array<string>
   motd?: string
   nuts?: Record<string, unknown>
   icon_url?: string

@@ -6,6 +6,7 @@ import { transactionsApi } from '../api'
 interface DepositModalProps {
   isOpen: boolean
   onClose: () => void
+  coinName: string
   coinSymbol: string
   onDeposit: (amount: number, newBalance: number) => void
 }
@@ -15,7 +16,7 @@ type DepositStep = 'method' | 'amount' | 'invoice' | 'token' | 'success' | 'erro
 
 const POLL_INTERVAL_MS = 3000 // Poll every 3 seconds
 
-function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalProps) {
+function DepositModal({ isOpen, onClose, coinName, coinSymbol, onDeposit }: DepositModalProps) {
   const [step, setStep] = useState<DepositStep>('method')
   const [amount, setAmount] = useState('')
   const [invoice, setInvoice] = useState('')
@@ -229,7 +230,7 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
       case 'success': return 'Deposit Received!'
       case 'expired': return 'Invoice Expired'
       case 'error': return 'Error'
-      case 'token': return 'Deposit Token'
+      case 'token': return 'Deposit Cashu'
       case 'amount': return 'Deposit Lightning'
       case 'invoice': return 'Pay Invoice'
       default: return 'Deposit'
@@ -237,7 +238,7 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4 py-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 px-4 py-4 overflow-y-auto">
       <div
         ref={modalRef}
         className="bg-white dark:bg-dark-surface border border-black dark:border-dark-border shadow-xl w-full max-w-md my-auto"
@@ -266,7 +267,7 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
                 <Zap className="h-6 w-6 text-gray-600 dark:text-dark-muted" />
                 <div className="text-left">
                   <p className="font-medium dark:text-dark-text">Lightning</p>
-                  <p className="text-xs text-gray-500 dark:text-dark-muted">Pay a Lightning invoice</p>
+                  <p className="text-xs text-gray-500 dark:text-dark-muted">Make a deposit via Lightning invoice</p>
                 </div>
               </button>
               <button
@@ -275,8 +276,8 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
               >
                 <Coins className="h-6 w-6 text-gray-600 dark:text-dark-muted" />
                 <div className="text-left">
-                  <p className="font-medium dark:text-dark-text">Cashu Token</p>
-                  <p className="text-xs text-gray-500 dark:text-dark-muted">Paste a cashu bearer token</p>
+                  <p className="font-medium dark:text-dark-text">Deposit Cashu</p>
+                  <p className="text-xs text-gray-500 dark:text-dark-muted">Paste in a valid token</p>
                 </div>
               </button>
             </div>
@@ -286,17 +287,22 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-dark-text mb-1">
-                  Amount ({coinSymbol})
+                  Amount
                 </label>
-                <input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="Enter amount to deposit"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text focus:border-black dark:focus:border-white focus:outline-none"
-                  min="1"
-                  autoFocus
-                />
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="0"
+                    className="w-full px-3 py-2 pr-16 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text focus:border-black dark:focus:border-white focus:outline-none"
+                    min="1"
+                    autoFocus
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-dark-muted pointer-events-none">
+                    {coinName}s
+                  </span>
+                </div>
               </div>
 
               {error && (
@@ -330,13 +336,13 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-dark-text mb-1">
-                  Cashu Token
+                  Token
                 </label>
                 <textarea
                   value={tokenInput}
                   onChange={(e) => setTokenInput(e.target.value)}
                   placeholder="Paste cashu token (cashuA... or cashuB...)"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text focus:border-black dark:focus:border-white focus:outline-none font-mono text-xs h-24 resize-none"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text focus:border-black dark:focus:border-white focus:outline-none font-mono text-xs h-24"
                   autoFocus
                 />
               </div>
@@ -355,7 +361,7 @@ function DepositModal({ isOpen, onClose, coinSymbol, onDeposit }: DepositModalPr
                 ) : (
                   <>
                     <Coins className="h-5 w-5" />
-                    Redeem Token
+                    Deposit {coinName}s
                   </>
                 )}
               </button>
