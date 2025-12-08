@@ -37,3 +37,7 @@ Run the frontend
 cd frontend
 npm run dev
 ```
+
+## Screenshots
+
+![screenshot](/static/screenshot0.png)
