@@ -1,6 +1,5 @@
 {
-  "name": "coinbank-frontend",
-  "private": true,
+  "name": "coinbank",
   "version": "0.1.0",
   "type": "module",
   "scripts": {

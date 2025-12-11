@@ -40,4 +40,4 @@ npm run dev
 
 ## Screenshots
 
-![screenshot](/static/screenshot0.png)
+![screenshot](/screenshot0.png)
