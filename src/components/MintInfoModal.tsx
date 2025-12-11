@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Info, X, Mail, Globe, MessageCircle, Copy, Check } from 'lucide-react'
-import { mintApi, MintInfo, statsApi, Stats } from '../api'
+import { mintApi, MintInfo, getMintUrl } from '../api'
 
 // X (Twitter) logo SVG
 const XLogo = ({ className }: { className?: string }) => (
@@ -12,7 +12,6 @@ const XLogo = ({ className }: { className?: string }) => (
 function MintInfoModal() {
   const [isOpen, setIsOpen] = useState(false)
   const [mintInfo, setMintInfo] = useState<MintInfo | null>(null)
-  const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copiedField, setCopiedField] = useState<string | null>(null)
@@ -22,20 +21,6 @@ function MintInfoModal() {
     if (isOpen) {
       fetchData()
     }
-  }, [isOpen])
-
-  // Listen for stats refresh events
-  useEffect(() => {
-    const handleRefresh = async () => {
-      if (isOpen) {
-        const statsResponse = await statsApi.get()
-        if (statsResponse.data) {
-          setStats(statsResponse.data)
-        }
-      }
-    }
-    window.addEventListener('stats-refresh', handleRefresh)
-    return () => window.removeEventListener('stats-refresh', handleRefresh)
   }, [isOpen])
 
   useEffect(() => {
@@ -54,19 +39,12 @@ function MintInfoModal() {
     setLoading(true)
     setError(null)
     
-    const [mintResponse, statsResponse] = await Promise.all([
-      mintApi.info(),
-      statsApi.get()
-    ])
+    const mintResponse = await mintApi.info()
     
     if (mintResponse.error) {
       setError(mintResponse.error)
     } else if (mintResponse.data) {
       setMintInfo(mintResponse.data)
-    }
-    
-    if (statsResponse.data) {
-      setStats(statsResponse.data)
     }
     
     setLoading(false)
@@ -96,8 +74,7 @@ function MintInfoModal() {
     return `${pubkey.slice(0, 8)}...${pubkey.slice(-8)}`
   }
 
-  const reserves = stats && stats.total_liabilities > 0 
-    ? (stats.total_liabilities) : '0'
+  const mintUrl = getMintUrl()
 
   return (
     <div className="relative">
@@ -132,13 +109,6 @@ function MintInfoModal() {
               {/* Header */}
               <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  {mintInfo.icon_url && (
-                    <img
-                      src={mintInfo.icon_url}
-                      alt=""
-                      className="h-8 w-8"
-                    />
-                  )}
                   <div>
                     <p className="font-medium text-sm text-black dark:text-dark-text">{mintInfo.name || 'Mint'}</p>
                     {mintInfo.version && (
@@ -154,14 +124,6 @@ function MintInfoModal() {
                 </button>
               </div>
 
-              {/* Reserves */}
-              {stats && (
-                <div className="p-4">
-                  <p className="text-xs text-gray-400 uppercase tracking-wide">Reserves</p>
-                  <p className="text-lg font-semibold text-black dark:text-dark-text">{reserves.toLocaleString()} <span className="text-xs text-gray-400 select-none">{stats.coin_symbol}</span></p>
-                </div>
-              )}
-
               {/* Description */}
               {mintInfo.description && (
                 <div className="p-4">
@@ -174,10 +136,10 @@ function MintInfoModal() {
                 <p className="text-xs text-gray-400 mb-1">Mint URL</p>
                 <div className="flex items-center justify-between gap-2">
                   <code className="text-xs font-mono text-gray-600 dark:text-gray-400 truncate">
-                    {mintInfo.urls?.[0]}
+                    {mintUrl}
                   </code>
                   <button
-                    onClick={() => copyToClipboard(mintInfo.urls?.[0] || '', 'url')}
+                    onClick={() => copyToClipboard(mintUrl, 'url')}
                     className="p-1 hover:bg-gray-100 dark:hover:bg-dark-surface flex-shrink-0"
                   >
                     {copiedField === 'url' ? (
@@ -188,28 +150,6 @@ function MintInfoModal() {
                   </button>
                 </div>
               </div>
-
-              {/* Wallet API URL */}
-              {stats?.wallet_api_url && (
-                <div className="p-4">
-                  <p className="text-xs text-gray-400 mb-1">Wallet API</p>
-                  <div className="flex items-center justify-between gap-2">
-                    <code className="text-xs font-mono text-gray-600 dark:text-gray-400 truncate">
-                      {stats.wallet_api_url}
-                    </code>
-                    <button
-                      onClick={() => copyToClipboard(stats.wallet_api_url!, 'wallet_url')}
-                      className="p-1 hover:bg-gray-100 dark:hover:bg-dark-surface flex-shrink-0"
-                    >
-                      {copiedField === 'wallet_url' ? (
-                        <Check className="h-3 w-3 text-black dark:text-dark-text" />
-                      ) : (
-                        <Copy className="h-3 w-3 text-gray-400" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              )}
 
               {/* Pubkey */}
               {mintInfo.pubkey && (
